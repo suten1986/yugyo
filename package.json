@@ -1,6 +1,6 @@
 {
-  "name": "facebook-viewer",
-  "version": "1.0.1",
+  "name": "facebook-pageplugin-viewer",
+  "version": "1.0.0",
   "private": true,
   "type": "commonjs",
   "scripts": {
@@ -10,7 +10,6 @@
     "node": ">=18"
   },
   "dependencies": {
-    "dotenv": "^16.3.1",
     "express": "^4.18.2"
   }
 }

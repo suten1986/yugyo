@@ -7,16 +7,23 @@
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-<header>
-  <h1>Facebookビューワー</h1>
-  <button id="refreshBtn" class="refresh-btn">最新取得ボタン</button>
-</header>
-<main>
-  <div id="timeline" class="timeline"></div>
-  <div id="loader" class="loader">読み込み中...</div>
-  <button id="loadMore" class="load-btn" style="display:none">もっと読む</button>
-  <div id="fallback" class="fallback" hidden></div>
-</main>
-<script src="app.js"></script>
+  <header class="page-header">
+    <h1>Facebookビューワー</h1>
+    <button id="refreshBtn" class="refresh-btn" onclick="window.location.reload()">最新取得</button>
+  </header>
+
+  <main class="main">
+    <div id="fb-root"></div>
+    <div class="fb-page"
+         data-href="https://www.facebook.com/SHIKIMARU2008"
+         data-tabs="timeline"
+         data-width="500"
+         data-hide-cover="false"
+         data-show-facepile="false"></div>
+  </main>
+
+  <!-- Facebook SDK -->
+  <script async defer crossorigin="anonymous"
+          src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v18.0"></script>
 </body>
 </html>

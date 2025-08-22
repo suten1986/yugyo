@@ -1,109 +1,150 @@
+/* 正しいページング実装
+ * - 最初の呼び出しで最新投稿を取得（Graph APIのデフォルトは新しい→古い）
+ * - レスポンスの paging.next URL をそのまま保持し、次回はそれを叩く（＝より古い投稿）
+ * - ID重複を避けるために Set を使用
+ * - スクロール終端で自動ロード（IntersectionObserver）
+ */
+const feedEl = document.getElementById('feed');
+const loadBtn = document.getElementById('loadBtn');
+const pageIdEl = document.getElementById('pageId');
+const tokenEl = document.getElementById('token');
+const sentinel = document.getElementById('sentinel');
 
-const timelineEl = document.getElementById('timeline');
-const loadMoreBtn = document.getElementById('loadMore');
-const loaderEl = document.getElementById('loader');
-const refreshBtn = document.getElementById('refreshBtn');
-const fallbackEl = document.getElementById('fallback');
+let nextPageUrl = null;       // 次ページ（より古い投稿）の完全URL
+let seenIds = new Set();      // 重複防止
+let isLoading = false;
 
-let nextCursor = null;
-const loadedIds = new Set();
+const FIELDS = [
+  'id',
+  'message',
+  'created_time',
+  'permalink_url',
+  'attachments{media_type,media,url,unshimmed_url,subattachments}'
+].join(',');
 
-refreshBtn.addEventListener('click', () => window.location.reload());
-
-function ensureFbSdk() {
-  if (window.FB) { window.FB.XFBML.parse(); return; }
-  const s = document.createElement('script');
-  s.async = true; s.defer = true; s.crossOrigin = 'anonymous';
-  s.src = 'https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v18.0';
-  s.onload = () => window.FB && window.FB.XFBML.parse();
-  document.body.appendChild(s);
+function buildInitialUrl(pageId, token, limit=10){
+  const base = new URL(`https://graph.facebook.com/v19.0/${encodeURIComponent(pageId)}/posts`);
+  base.searchParams.set('fields', FIELDS);
+  base.searchParams.set('access_token', token);
+  base.searchParams.set('limit', String(limit));
+  // デフォルトは新→古。ここでは特に since/until は使わず、paging.next を信頼する。
+  return base.toString();
 }
 
-function showFallback() {
-  if (!fallbackEl.hasChildNodes()) {
-    fallbackEl.innerHTML = `
-      <div id="fb-root"></div>
-      <div class="fb-page" data-href="https://www.facebook.com/SHIKIMARU2008"
-           data-tabs="timeline" data-width="500"
-           data-hide-cover="false" data-show-facepile="false"></div>`;
-    ensureFbSdk();
+async function fetchUrl(url){
+  const res = await fetch(url);
+  if(!res.ok){
+    const text = await res.text();
+    throw new Error(`HTTP ${res.status}: ${text}`);
   }
-  timelineEl.style.display = 'none';
-  loadMoreBtn.style.display = 'none';
-  loaderEl.style.display = 'none';
-  fallbackEl.hidden = false;
+  return res.json();
 }
 
-async function fetchPosts(after=null) {
-  loaderEl.style.display = 'block';
+function fmtDate(iso){
   try {
-    const url = after ? `/api/posts?after=${encodeURIComponent(after)}` : '/api/posts';
-    const r = await fetch(url);
-    const data = await r.json();
-    if (!r.ok || data.error) {
-      // permission/credential/etc. error -> fallback without alert
-      showFallback();
-      return { data: [], paging: {} };
+    const d = new Date(iso);
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    return `${y}-${m}-${day} ${hh}:${mm}`;
+  } catch {
+    return iso;
+  }
+}
+
+function renderAttachment(container, att){
+  if(!att) return;
+  // シンプル対応：写真とリンクのみ
+  if(att.media_type === 'photo' && att.media && att.media.image && att.media.image.src){
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.src = att.media.image.src;
+    img.alt = '';
+    container.appendChild(img);
+  } else if(att.media_type === 'album' && att.subattachments){
+    att.subattachments.data.forEach(sub => renderAttachment(container, sub));
+  } else if(att.url){
+    const a = document.createElement('a');
+    a.href = att.url;
+    a.target = '_blank';
+    a.textContent = 'リンクを開く';
+    container.appendChild(a);
+  }
+}
+
+function renderPost(post){
+  if(seenIds.has(post.id)) return;
+  seenIds.add(post.id);
+
+  const tpl = document.getElementById('post-tpl');
+  const node = tpl.content.firstElementChild.cloneNode(true);
+  node.dataset.id = post.id;
+  node.querySelector('.created').textContent = fmtDate(post.created_time);
+  node.querySelector('.permalink').href = post.permalink_url || '#';
+  node.querySelector('.message').textContent = post.message || '';
+
+  const mediaEl = node.querySelector('.media');
+  const atts = post.attachments && post.attachments.data ? post.attachments.data : [];
+  atts.forEach(att => renderAttachment(mediaEl, att));
+
+  feedEl.appendChild(node);
+}
+
+async function loadInitial(){
+  const pageId = pageIdEl.value.trim();
+  const token = tokenEl.value.trim();
+  if(!pageId || !token){
+    alert('PAGE_ID と ACCESS_TOKEN を入力してください。');
+    return;
+  }
+  feedEl.innerHTML = '';
+  seenIds.clear();
+  nextPageUrl = null;
+
+  const url = buildInitialUrl(pageId, token);
+  await loadFrom(url);
+}
+
+async function loadMore(){
+  if(!nextPageUrl) return;
+  await loadFrom(nextPageUrl);
+}
+
+async function loadFrom(url){
+  if(isLoading) return;
+  isLoading = true;
+  sentinel.textContent = '読み込み中...';
+  try {
+    const json = await fetchUrl(url);
+    const data = Array.isArray(json.data) ? json.data : [];
+    data.forEach(renderPost);
+
+    // 重要：より古い投稿のページURLを保持
+    nextPageUrl = json.paging && json.paging.next ? json.paging.next : null;
+    if(!nextPageUrl){
+      sentinel.textContent = 'これ以上はありません';
+      observer.disconnect();
+    } else {
+      sentinel.textContent = '下までスクロールで次を読み込み';
     }
-    return data;
-  } catch (_e) {
-    // network/server error -> fallback
-    showFallback();
-    return { data: [], paging: {} };
+  } catch (e) {
+    console.error(e);
+    sentinel.textContent = '読み込みエラー。コンソールを確認してください。';
   } finally {
-    loaderEl.style.display = 'none';
+    isLoading = false;
   }
 }
 
-function renderPosts(posts){
-  for(const post of posts){
-    const idKey = post.id || (post.created_time + '|' + (post.message || post.story || ''));
-    if (loadedIds.has(idKey)) continue;
-    loadedIds.add(idKey);
+loadBtn.addEventListener('click', loadInitial);
 
-    const card = document.createElement('article');
-    card.className = 'post';
-
-    const date = document.createElement('div');
-    date.className = 'date';
-    date.textContent = new Date(post.created_time).toLocaleString('ja-JP');
-    card.appendChild(date);
-
-    if (post.message || post.story){
-      const msg = document.createElement('div');
-      msg.className = 'message';
-      msg.textContent = post.message || post.story;
-      card.appendChild(msg);
+// スクロール終端で自動ロード
+const observer = new IntersectionObserver((entries)=>{
+  for(const entry of entries){
+    if(entry.isIntersecting){
+      loadMore();
     }
-
-    // video embedding (only when API succeeded)
-    const isVideo = Array.isArray(post.attachments?.data) &&
-                    post.attachments.data.some(a => (a.media_type||'').toLowerCase().includes('video'));
-    if (isVideo && post.permalink_url){
-      const wrap = document.createElement('div');
-      wrap.className = 'fb-page-wrapper';
-      wrap.innerHTML = `<div class="fb-video" data-href="${post.permalink_url}" data-allowfullscreen="true" data-width="500"></div>`;
-      card.appendChild(wrap);
-      ensureFbSdk();
-    }
-
-    timelineEl.appendChild(card);
   }
-}
-
-async function init(){
-  const first = await fetchPosts();
-  renderPosts(first.data || []);
-  nextCursor = first?.paging?.cursors?.after || null;
-  loadMoreBtn.style.display = nextCursor ? 'block' : 'none';
-}
-
-loadMoreBtn.addEventListener('click', async ()=>{
-  if (!nextCursor) return;
-  const page = await fetchPosts(nextCursor);
-  renderPosts(page.data || []);
-  nextCursor = page?.paging?.cursors?.after || null;
-  loadMoreBtn.style.display = nextCursor ? 'block' : 'none';
 });
-
-init();
+observer.observe(sentinel);

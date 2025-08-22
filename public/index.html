@@ -1,29 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Facebookビューワー</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Facebook Posts - 正しいページング</title>
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <header class="page-header">
-    <h1>Facebookビューワー</h1>
-    <button id="refreshBtn" class="refresh-btn" onclick="window.location.reload()">最新取得</button>
+  <header>
+    <h1>Facebook 投稿（古い順にページング）</h1>
+    <div class="controls">
+      <label>PAGE_ID: <input id="pageId" placeholder="your_page_id" /></label>
+      <label>ACCESS_TOKEN: <input id="token" placeholder="EAAG..." /></label>
+      <button id="loadBtn">最新から読み込み</button>
+    </div>
   </header>
 
-  <main class="main">
-    <div id="fb-root"></div>
-    <div class="fb-page"
-         data-href="https://www.facebook.com/SHIKIMARU2008"
-         data-tabs="timeline"
-         data-width="500"
-         data-hide-cover="false"
-         data-show-facepile="false"></div>
-  </main>
+  <main id="feed"></main>
+  <div id="sentinel">読み込み中...</div>
 
-  <!-- Facebook SDK -->
-  <script async defer crossorigin="anonymous"
-          src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v18.0"></script>
+  <template id="post-tpl">
+    <article class="post" data-id="">
+      <div class="meta">
+        <span class="created"></span>
+        <a class="permalink" href="#" target="_blank">Facebookで開く</a>
+      </div>
+      <p class="message"></p>
+      <div class="media"></div>
+    </article>
+  </template>
+
+  <script src="./app.js"></script>
 </body>
 </html>

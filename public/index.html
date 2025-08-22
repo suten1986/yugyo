@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Facebookタイムライン</title>
+  <title>Facebookビューワー</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <!-- Header -->
   <header class="page-header">
-    <h1>Facebookタイムライン</h1>
+    <h1>Facebookビューワー</h1>
     <p>Facebookページ「一つテンヤ真鯛 四季丸」のタイムラインです</p>
+    <button id="refreshBtn" class="refresh-btn">最新情報</button>
   </header>
 
   <!-- Facebook Page Plugin wrapper -->
@@ -43,5 +44,14 @@
     crossorigin="anonymous"
     src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v23.0"
   ></script>
+
+  <!-- Reload handler -->
+  <script>
+    // When the "最新情報" button is clicked, reload the page to fetch the latest
+    // timeline from Facebook. This ensures the Page Plugin shows current posts.
+    document.getElementById('refreshBtn').addEventListener('click', function () {
+      window.location.reload();
+    });
+  </script>
 </body>
 </html>

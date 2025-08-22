@@ -29,3 +29,20 @@ header p {
   max-width: 500px;
   margin: 1rem auto;
 }
+
+/* Refresh button styling */
+.refresh-btn {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #4267B2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.refresh-btn:hover {
+  background-color: #3558a4;
+}

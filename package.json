@@ -1,10 +1,13 @@
 {
-  "name": "facebook-timeline-webapp",
-  "version": "1.0.0",
-  "description": "A simple web application that displays posts from a Facebook page in a timeline format.",
-  "main": "server.js",
+  "name": "facebook-viewer",
+  "version": "1.0.1",
+  "private": true,
+  "type": "commonjs",
   "scripts": {
     "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "dotenv": "^16.3.1",

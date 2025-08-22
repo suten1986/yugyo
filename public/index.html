@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Facebook タイムライン</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Facebookビューワー</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <header>
-    <h1>Facebook タイムライン</h1>
-    <p class="subtitle">ページの最新投稿を表示します</p>
-  </header>
-  <main>
-    <section id="timeline"></section>
-    <div id="loader" class="hidden">読み込み中...</div>
-    <button id="loadMore" class="hidden">もっと読む</button>
-  </main>
-
-  <script src="app.js"></script>
+<header>
+  <h1>Facebookビューワー</h1>
+  <button id="refreshBtn" class="refresh-btn">最新取得</button>
+</header>
+<main>
+  <div id="timeline" class="timeline"></div>
+  <div id="loader" class="loader">読み込み中...</div>
+  <button id="loadMore" class="load-btn" style="display:none">もっと読む</button>
+  <div id="fallback" class="fallback" hidden></div>
+</main>
+<script src="app.js"></script>
 </body>
 </html>

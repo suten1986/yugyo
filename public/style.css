@@ -1,84 +1,17 @@
-/* Basic styling for the Facebook timeline web app */
-body {
-  font-family: system-ui, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f7f7f7;
-  color: #333;
-}
 
-header {
-  background-color: #4267B2; /* Facebook blue */
-  color: #fff;
-  padding: 1rem;
-  text-align: center;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
-header .subtitle {
-  margin: 0.25rem 0 0;
-  font-size: 0.9rem;
-}
-
-main {
-  max-width: 800px;
-  margin: 1rem auto;
-  padding: 0 1rem;
-}
-
-#timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Style each post */
-.post {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 1rem;
-}
-
-.post .date {
-  color: #555;
-  font-size: 0.8rem;
-  margin-bottom: 0.5rem;
-}
-
-.post .message {
-  white-space: pre-wrap;
-  line-height: 1.4;
-  font-size: 1rem;
-}
-
-#loadMore {
-  display: block;
-  width: 100%;
-  max-width: 200px;
-  margin: 2rem auto;
-  padding: 0.75rem 1rem;
-  background-color: #4267B2;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-#loadMore:hover {
-  background-color: #3558a4;
-}
-
-#loader {
-  text-align: center;
-  margin: 2rem 0;
-}
-
-.hidden {
-  display: none;
-}
+:root{ --fb-blue:#4267B2; }
+*{ box-sizing:border-box; }
+body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:#f5f6f7; color:#111; }
+header{ background:var(--fb-blue); color:#fff; padding:.6rem 1rem; display:flex; align-items:center; justify-content:space-between; }
+header h1{ margin:0; font-size:1.1rem; }
+.refresh-btn{ padding:.5rem 1rem; background:#fff0; color:#fff; border:1px solid rgba(255,255,255,.85); border-radius:6px; cursor:pointer; }
+.refresh-btn:hover{ background:rgba(255,255,255,.08); }
+main{ max-width:780px; margin:1rem auto; padding:0 1rem; }
+.timeline{ display:flex; flex-direction:column; gap:12px; }
+.post{ background:#fff; padding:12px 14px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.post .date{ color:#666; font-size:.85rem; margin-bottom:6px; }
+.post .message{ white-space:pre-wrap; line-height:1.5; }
+.load-btn{ margin:12px auto; display:block; padding:.6rem 1.2rem; color:#fff; background:var(--fb-blue); border:none; border-radius:6px; cursor:pointer; }
+.loader{ text-align:center; color:#666; padding:8px; display:none; }
+.fallback{ margin:12px auto; max-width:500px; }
+.fb-page-wrapper{ max-width:500px; margin:0 auto; }

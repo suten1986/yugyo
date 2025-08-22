@@ -1,104 +1,109 @@
-/*
- * Client-side JavaScript to fetch posts from the server and render them on
- * the page. Supports pagination via the "after" cursor returned by the
- * Graph API. Posts are displayed in descending order (latest first).
- */
 
 const timelineEl = document.getElementById('timeline');
 const loadMoreBtn = document.getElementById('loadMore');
 const loaderEl = document.getElementById('loader');
+const refreshBtn = document.getElementById('refreshBtn');
+const fallbackEl = document.getElementById('fallback');
 
-// Store pagination cursor for the next page of results
 let nextCursor = null;
-// Track IDs of posts that have already been rendered. This prevents
-// duplicates when paginating. The Graph API returns an "id" for each
-// post which we include via the server. See server.js for details.
 const loadedIds = new Set();
 
-/**
- * Format a date string into a human readable form in the user's locale.
- *
- * @param {string} isoDate ISO8601 date string
- * @returns {string}
- */
-function formatDate(isoDate) {
-  const date = new Date(isoDate);
-  return date.toLocaleString(undefined, {
-    year: 'numeric', month: 'short', day: 'numeric',
-    hour: '2-digit', minute: '2-digit', second: '2-digit'
-  });
+refreshBtn.addEventListener('click', () => window.location.reload());
+
+function ensureFbSdk() {
+  if (window.FB) { window.FB.XFBML.parse(); return; }
+  const s = document.createElement('script');
+  s.async = true; s.defer = true; s.crossOrigin = 'anonymous';
+  s.src = 'https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v18.0';
+  s.onload = () => window.FB && window.FB.XFBML.parse();
+  document.body.appendChild(s);
 }
 
-/**
- * Render an array of posts into the DOM
- *
- * @param {Array<object>} posts
- */
-function renderPosts(posts) {
-  posts.forEach(post => {
-    // Use the post.id if available (server includes it) to avoid
-    // rendering duplicates. If id is missing, fall back to a
-    // composite key of created_time + message. This ensures that
-    // pagination using the "after" cursor does not re‑add the same
-    // posts when Facebook returns overlapping data.
-    const uniqueKey = post.id || `${post.created_time}-${post.message || post.story}`;
-    if (loadedIds.has(uniqueKey)) {
-      return;
+function showFallback() {
+  if (!fallbackEl.hasChildNodes()) {
+    fallbackEl.innerHTML = `
+      <div id="fb-root"></div>
+      <div class="fb-page" data-href="https://www.facebook.com/SHIKIMARU2008"
+           data-tabs="timeline" data-width="500"
+           data-hide-cover="false" data-show-facepile="false"></div>`;
+    ensureFbSdk();
+  }
+  timelineEl.style.display = 'none';
+  loadMoreBtn.style.display = 'none';
+  loaderEl.style.display = 'none';
+  fallbackEl.hidden = false;
+}
+
+async function fetchPosts(after=null) {
+  loaderEl.style.display = 'block';
+  try {
+    const url = after ? `/api/posts?after=${encodeURIComponent(after)}` : '/api/posts';
+    const r = await fetch(url);
+    const data = await r.json();
+    if (!r.ok || data.error) {
+      // permission/credential/etc. error -> fallback without alert
+      showFallback();
+      return { data: [], paging: {} };
     }
-    loadedIds.add(uniqueKey);
-    const el = document.createElement('div');
-    el.className = 'post';
+    return data;
+  } catch (_e) {
+    // network/server error -> fallback
+    showFallback();
+    return { data: [], paging: {} };
+  } finally {
+    loaderEl.style.display = 'none';
+  }
+}
+
+function renderPosts(posts){
+  for(const post of posts){
+    const idKey = post.id || (post.created_time + '|' + (post.message || post.story || ''));
+    if (loadedIds.has(idKey)) continue;
+    loadedIds.add(idKey);
+
+    const card = document.createElement('article');
+    card.className = 'post';
+
     const date = document.createElement('div');
     date.className = 'date';
-    date.textContent = formatDate(post.created_time);
-    const message = document.createElement('div');
-    message.className = 'message';
-    // Prefer message field; fall back to story if message is empty
-    message.textContent = post.message || post.story || '[投稿テキストなし]';
-    el.appendChild(date);
-    el.appendChild(message);
-    timelineEl.appendChild(el);
-  });
-}
+    date.textContent = new Date(post.created_time).toLocaleString('ja-JP');
+    card.appendChild(date);
 
-/**
- * Fetch posts from the server API. If `cursor` is provided, it will be
- * sent as the `after` query param to fetch the next page.
- *
- * @param {string|null} cursor
- */
-async function fetchPosts(cursor = null) {
-  loaderEl.classList.remove('hidden');
-  loadMoreBtn.classList.add('hidden');
-  try {
-    const params = new URLSearchParams({ limit: 10 });
-    if (cursor) params.set('after', cursor);
-    const res = await fetch(`/api/posts?${params.toString()}`);
-    const data = await res.json();
-    if (res.ok) {
-      renderPosts(data.posts);
-      // Update next cursor if present
-      nextCursor = data.paging && data.paging.cursors && data.paging.cursors.after;
-      if (nextCursor) {
-        loadMoreBtn.classList.remove('hidden');
-      }
-    } else {
-      alert(data.error || 'エラーが発生しました');
+    if (post.message || post.story){
+      const msg = document.createElement('div');
+      msg.className = 'message';
+      msg.textContent = post.message || post.story;
+      card.appendChild(msg);
     }
-  } catch (err) {
-    console.error(err);
-    alert('投稿の取得中にエラーが発生しました');
-  } finally {
-    loaderEl.classList.add('hidden');
+
+    // video embedding (only when API succeeded)
+    const isVideo = Array.isArray(post.attachments?.data) &&
+                    post.attachments.data.some(a => (a.media_type||'').toLowerCase().includes('video'));
+    if (isVideo && post.permalink_url){
+      const wrap = document.createElement('div');
+      wrap.className = 'fb-page-wrapper';
+      wrap.innerHTML = `<div class="fb-video" data-href="${post.permalink_url}" data-allowfullscreen="true" data-width="500"></div>`;
+      card.appendChild(wrap);
+      ensureFbSdk();
+    }
+
+    timelineEl.appendChild(card);
   }
 }
 
-// Initial load
-fetchPosts();
+async function init(){
+  const first = await fetchPosts();
+  renderPosts(first.data || []);
+  nextCursor = first?.paging?.cursors?.after || null;
+  loadMoreBtn.style.display = nextCursor ? 'block' : 'none';
+}
 
-// Load more button handler
-loadMoreBtn.addEventListener('click', () => {
-  if (nextCursor) {
-    fetchPosts(nextCursor);
-  }
+loadMoreBtn.addEventListener('click', async ()=>{
+  if (!nextCursor) return;
+  const page = await fetchPosts(nextCursor);
+  renderPosts(page.data || []);
+  nextCursor = page?.paging?.cursors?.after || null;
+  loadMoreBtn.style.display = nextCursor ? 'block' : 'none';
 });
+
+init();

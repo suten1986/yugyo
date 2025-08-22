@@ -9,7 +9,11 @@
  */
 
 const express = require('express');
-const fetch = require('node-fetch');
+// Use the global fetch provided by Node.js (>=18) instead of importing
+// node-fetch. Importing node-fetch v3 with require() can return an
+// object rather than a function, leading to "fetch is not a function"
+// errors on some platforms. The built‑in fetch API is sufficiently
+// compatible for our simple proxy.
 const path = require('path');
 const dotenv = require('dotenv');
 

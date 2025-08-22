@@ -9,7 +9,19 @@
  */
 
 const express = require('express');
-const fetch = require('node-fetch');
+/*
+ * In Node.js v18 and later, the Fetch API is available globally, so we don't
+ * need to import a separate polyfill like `node-fetch`. Using the global
+ * `fetch` avoids common issues where the imported module returns an object
+ * with a `default` property instead of the function itself. See the error
+ * "fetch is not a function" that occurs when using `require('node-fetch')`
+ * in a CommonJS context with Node.js v22. If you need to support older
+ * Node.js versions (<18), you can fall back to using `node-fetch` via
+ * dynamic import:
+ *   const fetch = (...args) => import('node-fetch').then(mod => mod.default(...args));
+ */
+
+// Use the built‑in global fetch provided by Node.js v18+. No import required.
 const path = require('path');
 const dotenv = require('dotenv');
 

@@ -10,18 +10,21 @@ body {
 header {
   background-color: #4267B2; /* Facebook blue */
   color: #fff;
-  padding: 1rem;
+  /* Reduce padding to make the header shorter */
+  padding: 0.5rem 1rem;
   text-align: center;
 }
 
 header h1 {
   margin: 0;
-  font-size: 1.5rem;
+  /* Slightly smaller title to save vertical space */
+  font-size: 1.3rem;
 }
 
 header p {
-  margin: 0.25rem 0 0;
-  font-size: 0.9rem;
+  /* Reduce top margin and font size for subtitle */
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
 }
 
 /* Center the Facebook Page Plugin */
@@ -33,13 +36,14 @@ header p {
 /* Refresh button styling */
 .refresh-btn {
   display: inline-block;
-  margin-top: 0.5rem;
-  padding: 0.5rem 1rem;
+  /* Slightly reduce top margin and padding for a compact header */
+  margin-top: 0.4rem;
+  padding: 0.4rem 0.8rem;
   background-color: #4267B2;
   color: #fff;
   border: none;
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
 }
 

@@ -6,50 +6,79 @@ body {
   background-color: #f7f7f7;
   color: #333;
 }
-/* Style the page header */
+
 header {
   background-color: #4267B2; /* Facebook blue */
   color: #fff;
-  /* Reduce padding to make the header shorter */
-  padding: 0.5rem 1rem;
+  padding: 1rem;
   text-align: center;
 }
 
 header h1 {
   margin: 0;
-  /* Slightly smaller title to save vertical space */
-  font-size: 1.3rem;
+  font-size: 1.5rem;
 }
 
-header p {
-  /* Reduce top margin and font size for subtitle */
-  margin: 0.15rem 0 0;
-  font-size: 0.8rem;
+header .subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
 }
 
-/* Center the Facebook Page Plugin */
-.fb-page-wrapper {
-  max-width: 500px;
+main {
+  max-width: 800px;
   margin: 1rem auto;
+  padding: 0 1rem;
 }
 
-/* Refresh button styling */
-.refresh-btn {
-  display: inline-block;
-  /* Increase padding for a more button‑like feel */
-  margin-top: 0.4rem;
-  padding: 0.5rem 1rem;
+#timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Style each post */
+.post {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+}
+
+.post .date {
+  color: #555;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.post .message {
+  white-space: pre-wrap;
+  line-height: 1.4;
+  font-size: 1rem;
+}
+
+#loadMore {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  margin: 2rem auto;
+  padding: 0.75rem 1rem;
   background-color: #4267B2;
   color: #fff;
   border: none;
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
-  /* Add a slight shadow to give the appearance of depth */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.2s ease;
 }
 
-.refresh-btn:hover {
+#loadMore:hover {
   background-color: #3558a4;
+}
+
+#loader {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.hidden {
+  display: none;
 }

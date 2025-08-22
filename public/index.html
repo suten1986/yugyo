@@ -1,56 +1,22 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Facebookビューワー</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facebook タイムライン</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Header -->
-  <header class="page-header">
-    <h1>Facebookビューワー</h1>
-    <button id="refreshBtn" class="refresh-btn">最新取得</button>
+  <header>
+    <h1>Facebook タイムライン</h1>
+    <p class="subtitle">ページの最新投稿を表示します</p>
   </header>
+  <main>
+    <section id="timeline"></section>
+    <div id="loader" class="hidden">読み込み中...</div>
+    <button id="loadMore" class="hidden">もっと読む</button>
+  </main>
 
-  <!-- Facebook Page Plugin wrapper -->
-  <div id="fb-root"></div>
-  <div class="fb-page-wrapper">
-    <div
-      class="fb-page"
-      data-href="https://www.facebook.com/SHIKIMARU2008"
-      data-tabs="timeline"
-      data-width="500"
-      data-height=""
-      data-small-header="false"
-      data-adapt-container-width="true"
-      data-hide-cover="false"
-      data-show-facepile="true"
-    >
-      <blockquote
-        cite="https://www.facebook.com/SHIKIMARU2008"
-        class="fb-xfbml-parse-ignore"
-      >
-        <a href="https://www.facebook.com/SHIKIMARU2008">Facebook</a>
-      </blockquote>
-    </div>
-  </div>
-
-  <!-- Facebook JavaScript SDK -->
-  <script
-    async
-    defer
-    crossorigin="anonymous"
-    src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v23.0"
-  ></script>
-
-  <!-- Reload handler -->
-  <script>
-    // When the "最新情報" button is clicked, reload the page to fetch the latest
-    // timeline from Facebook. This ensures the Page Plugin shows current posts.
-    document.getElementById('refreshBtn').addEventListener('click', function () {
-      window.location.reload();
-    });
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

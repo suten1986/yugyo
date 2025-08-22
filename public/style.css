@@ -36,15 +36,18 @@ header p {
 /* Refresh button styling */
 .refresh-btn {
   display: inline-block;
-  /* Slightly reduce top margin and padding for a compact header */
+  /* Increase padding for a more button‑like feel */
   margin-top: 0.4rem;
-  padding: 0.4rem 0.8rem;
+  padding: 0.5rem 1rem;
   background-color: #4267B2;
   color: #fff;
   border: none;
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   cursor: pointer;
+  /* Add a slight shadow to give the appearance of depth */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease;
 }
 
 .refresh-btn:hover {
